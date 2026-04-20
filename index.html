@@ -2,114 +2,387 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <title>英検3級 音読トレーニング</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{min-height:100vh;background:linear-gradient(160deg,#0d0c1d 0%,#13112a 100%);color:#ddd9f0;font-family:-apple-system,'Helvetica Neue',sans-serif;display:flex;justify-content:center}
-    .app{width:100%;max-width:480px;min-height:100vh;padding-bottom:40px}
-    .header{padding:18px 22px 14px;border-bottom:1px solid #1e1b38;display:flex;align-items:center;justify-content:space-between}
-    .header-label{font-size:10px;letter-spacing:.18em;color:#5c59a0;text-transform:uppercase;margin-bottom:3px}
-    .header-title{font-size:16px;font-weight:700;color:#e8e4ff}
-    input[type="date"]{background:#1a1730;border:1px solid #2e2b50;border-radius:8px;color:#b0acdc;padding:6px 10px;font-size:13px;outline:none;font-family:inherit}
-    .day-info{padding:12px 22px 0}
-    .day-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
-    .day-badge{background:#3a36a8;color:#c8c5ff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;white-space:nowrap}
-    .mode-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
-    .mode-study{background:#0a2010;color:#50c878;border:1px solid #1a4a28}
-    .mode-quiz{background:#1a1230;color:#9b79e0;border:1px solid #3a2860}
-    .word-range{font-size:12px;color:#5c59a0}
-    .counter{margin-left:auto;font-size:12px;color:#5c5888}
-    .progress-track{height:3px;background:#1a1730;border-radius:2px;overflow:hidden}
-    .progress-fill{height:100%;border-radius:2px;transition:width .4s ease}
-    .main{padding:14px 22px 0}
-    .word-card{border-radius:16px;padding:20px 18px;margin-bottom:12px;position:relative;overflow:hidden;background:#14122a;border:1px solid rgba(124,119,209,.16)}
-    .glow{position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;pointer-events:none}
-    .word-meta{display:flex;gap:8px;align-items:center;margin-bottom:10px}
-    .word-num{font-size:11px;color:#3a3860}
-    .pos-badge{font-size:11px;font-weight:600;padding:2px 9px;border-radius:4px}
-    .word-en{font-size:36px;font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:4px;line-height:1.1}
-    .word-ja{font-size:19px;font-weight:500;margin-bottom:16px;opacity:.9}
-    .example-box{background:#0e0c20;border-radius:12px;padding:13px 15px}
-    .ex-en{font-size:14px;color:#c0bce8;line-height:1.7;margin-bottom:6px;font-weight:500}
-    .ex-ja{font-size:12px;color:#5c5888;line-height:1.6;margin-bottom:11px}
-    .speak-btn{border-radius:8px;padding:6px 15px;font-size:12px;cursor:pointer;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:6px;background:#1e1b38;border:1px solid #2e2b50;color:#7c77a8}
-    .speak-btn.active{border-color:rgba(124,119,209,.6);color:#7c77d1;background:rgba(124,119,209,.13)}
-    .conj-card{border-radius:16px;padding:20px 18px;margin-bottom:12px;background:#0f1a14;border:1px solid rgba(80,200,120,.2)}
-    .conj-header{display:flex;gap:8px;align-items:center;margin-bottom:16px}
-    .conj-label{font-size:10px;letter-spacing:.15em;color:#3a8a56;text-transform:uppercase;font-weight:600}
-    .conj-rows{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
-    .conj-row{display:flex;align-items:center;gap:12px;background:#0a1a10;border-radius:10px;padding:11px 14px}
-    .conj-role{font-size:10px;color:#3a6a46;width:52px;flex-shrink:0}
-    .conj-form{font-size:24px;font-weight:800;color:#fff;letter-spacing:-.5px;flex:1}
-    .conj-form.same{color:#5a7a62;font-size:20px}
-    .conj-play{border-radius:8px;padding:8px 18px;font-size:13px;cursor:pointer;font-family:inherit;transition:all .2s;background:#1a3a22;border:1px solid #2a5a32;color:#60c070;font-weight:600;display:flex;align-items:center;gap:8px;width:100%;justify-content:center}
-    .conj-play.playing{background:rgba(80,200,120,.15);border-color:rgba(80,200,120,.5);color:#80e090}
-    .quiz-card{border-radius:16px;padding:20px 18px;margin-bottom:12px;background:#13102a;border:1px solid rgba(155,121,224,.2)}
-    .quiz-review-badge{font-size:10px;background:#2a1a40;color:#9b79e0;border:1px solid #4a2a70;border-radius:4px;padding:2px 8px;display:inline-block;margin-bottom:10px}
-    .quiz-sentence{font-size:15px;color:#c0bce8;line-height:1.9;margin-bottom:6px;font-weight:500}
-    .quiz-blank{display:inline-block;background:#2a2050;border-bottom:2px solid #6a5aaa;color:#6a5aaa;padding:0 12px;border-radius:4px 4px 0 0;font-weight:700;font-size:15px;min-width:70px;text-align:center}
-    .quiz-ja{font-size:12px;color:#5c5888;line-height:1.6;margin-bottom:18px}
-    .choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .choice-btn{padding:14px 10px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;background:#1a1730;border:1px solid #2e2b50;color:#c0bce8;text-align:center;line-height:1.3;letter-spacing:-.02em}
-    .choice-btn:hover:not(:disabled){background:#242040;border-color:#4a4080}
-    .choice-btn.correct{background:#0a2a10!important;border-color:#40a060!important;color:#60e080!important}
-    .choice-btn.wrong{background:#2a0a0a!important;border-color:#a04040!important;color:#e06060!important}
-    .choice-btn.show-correct{background:#0a2a10!important;border-color:#40a060!important;color:#60e080!important}
-    .choice-btn:disabled{cursor:default}
-    .quiz-result{font-size:13px;font-weight:600;margin-top:12px;padding:10px 14px;border-radius:10px;display:none}
-    .quiz-result.correct{background:#0a2010;color:#50d070;border:1px solid #1a5028;display:block}
-    .quiz-result.wrong{background:#200a0a;color:#e06060;border:1px solid #501818;display:block}
-    .nav{display:flex;gap:10px;margin-top:0}
-    .nav-btn{padding:13px;border-radius:12px;font-size:14px;font-family:inherit;font-weight:600;cursor:pointer;transition:all .15s}
-    .nb-prev{flex:1;background:#1a1730;border:1px solid #2e2b50;color:#7c77a8}
-    .nb-prev:disabled{background:#0e0c1e;color:#2e2b50;cursor:default}
-    .nb-study{flex:2;background:#3a36a8;color:#fff;border:none}
-    .nb-conj{flex:2;background:#1a3a22;color:#60c070;border:1px solid #2a5a32}
-    .nb-quiz{flex:2;background:#3a2880;color:#c8b0f8;border:none}
-    .summary-card{border-radius:16px;padding:22px 18px;background:#13102a;border:1px solid rgba(155,121,224,.2);margin-bottom:12px}
-    .summary-title{font-size:15px;font-weight:700;color:#e8e4ff;margin-bottom:16px}
-    .summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1e1b30}
-    .summary-row:last-child{border-bottom:none}
-    .summary-label{font-size:13px;color:#7c77a8}
-    .summary-val{font-size:18px;font-weight:700}
-    .val-good{color:#50c878}.val-warn{color:#f5a623}.val-bad{color:#e06060}
-    .weak-list{margin-top:14px}
-    .weak-title{font-size:11px;color:#5c59a0;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
-    .weak-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#0e0c20;border-radius:8px;margin-bottom:6px}
-    .weak-word{font-size:14px;font-weight:700;color:#c0bce8}
-    .weak-cnt{font-size:11px;color:#9b79e0;background:#2a1a40;padding:2px 8px;border-radius:4px}
-    .center-msg{text-align:center;padding:48px 20px}
-    .center-icon{font-size:36px;margin-bottom:10px}
-    .center-title{font-size:16px;font-weight:700;color:#8884cc;margin-bottom:6px}
-    .center-sub{font-size:12px;color:#5c59a0;line-height:1.8}
-    .hidden{display:none}
-    .mode-select{padding:24px 0 8px}
-    .mode-select-title{font-size:13px;color:#5c59a0;text-align:center;margin-bottom:20px}
-    .mode-btn{display:flex;align-items:center;gap:16px;width:100%;padding:18px 20px;border-radius:14px;border:1px solid;cursor:pointer;font-family:inherit;text-align:left;margin-bottom:12px;transition:all .15s}
-    .mode-btn-study{background:#0a2010;border-color:#1a4a28;color:#c0e8c8}
-    .mode-btn-study:hover{background:#0e2a18;border-color:#2a6a38}
-    .mode-btn-quiz{background:#1a1230;border-color:#3a2860;color:#c8b0f8}
-    .mode-btn-quiz:hover{background:#201840;border-color:#4a3880}
-    .mode-btn-icon{font-size:28px;flex-shrink:0}
-    .mode-btn-text{}
-    .mode-btn-label{font-size:15px;font-weight:700;margin-bottom:3px}
-    .mode-btn-desc{font-size:12px;opacity:.7;line-height:1.5}
-    .hist-section{margin-top:18px;border-top:1px solid #1e1b30;padding-top:16px}
-    .hist-title{font-size:11px;color:#5c59a0;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
-    .hist-chart{display:flex;align-items:flex-end;gap:5px;height:72px;margin-bottom:10px}
-    .hist-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:0}
-    .hist-bar-bg{width:100%;background:#1a1730;border-radius:4px;overflow:hidden;height:52px;display:flex;align-items:flex-end}
-    .hist-bar-fill{width:100%;border-radius:4px;transition:height .5s ease;min-height:3px}
-    .hist-bar-pct{font-size:9px;color:#5c5888;white-space:nowrap;text-align:center;width:100%}
-    .hist-bar-date{font-size:9px;color:#3a3860;white-space:nowrap;text-align:center;width:100%;overflow:hidden;text-overflow:ellipsis}
-    .hist-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #13112a}
-    .hist-row:last-child{border-bottom:none}
-    .hist-row-date{font-size:12px;color:#7c77a8;flex:1}
-    .hist-row-day{font-size:11px;color:#3a3860;width:42px;text-align:center}
-    .hist-row-bar{flex:2;height:6px;background:#1a1730;border-radius:3px;overflow:hidden;margin:0 8px}
-    .hist-row-fill{height:100%;border-radius:3px}
-    .hist-row-pct{font-size:13px;font-weight:700;width:36px;text-align:right}
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(160deg,#0d0c1d 0%,#13112a 100%);
+      color: #ddd9f0;
+      font-family: -apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-serif;
+      display: flex;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 680px;
+      min-height: 100vh;
+      padding-bottom: 48px;
+    }
+
+    /* ── Header ── */
+    .header {
+      padding: 22px 28px 18px;
+      border-bottom: 1px solid #1e1b38;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-label {
+      font-size: 11px;
+      letter-spacing: .18em;
+      color: #5c59a0;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .header-title { font-size: 20px; font-weight: 700; color: #e8e4ff; }
+    input[type="date"] {
+      background: #1a1730;
+      border: 1px solid #2e2b50;
+      border-radius: 10px;
+      color: #b0acdc;
+      padding: 9px 13px;
+      font-size: 15px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    /* ── Day info ── */
+    .day-info { padding: 14px 28px 0; }
+    .day-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .day-badge {
+      background: #3a36a8;
+      color: #c8c5ff;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 5px 16px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .mode-badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 13px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .mode-study { background: #0a2010; color: #50c878; border: 1px solid #1a4a28; }
+    .mode-quiz  { background: #1a1230; color: #9b79e0; border: 1px solid #3a2860; }
+    .word-range { font-size: 13px; color: #5c59a0; }
+    .counter    { margin-left: auto; font-size: 13px; color: #5c5888; }
+    .progress-track { height: 4px; background: #1a1730; border-radius: 2px; overflow: hidden; }
+    .progress-fill  { height: 100%; border-radius: 2px; transition: width .4s ease; }
+
+    /* ── Main ── */
+    .main { padding: 18px 28px 0; }
+
+    /* ── Mode Select ── */
+    .mode-select { padding: 8px 0; }
+    .mode-select-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #e8e4ff;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .mode-select-sub { font-size: 13px; color: #5c59a0; text-align: center; margin-bottom: 28px; }
+    .mode-btn {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      width: 100%;
+      padding: 22px 22px;
+      border-radius: 14px;
+      border: 1px solid;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      margin-bottom: 14px;
+      transition: all .15s;
+    }
+    .mode-btn-study { background: #0a2010; border-color: #1a4a28; color: #c0e8c8; }
+    .mode-btn-study:hover { background: #0e2a18; }
+    .mode-btn-quiz  { background: #1a1230; border-color: #3a2860; color: #c8b0f8; }
+    .mode-btn-quiz:hover { background: #201840; }
+    .mode-btn-stats { background: #0e1828; border-color: #1e3850; color: #78b8e8; margin-top: 4px; }
+    .mode-btn-stats:hover { background: #142030; }
+    .mode-btn-icon { font-size: 28px; flex-shrink: 0; width: 36px; text-align: center; }
+    .mode-btn-label { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+    .mode-btn-desc  { font-size: 13px; opacity: .7; line-height: 1.5; }
+
+    /* ── Word Card ── */
+    .word-card {
+      border-radius: 18px;
+      padding: 26px 24px 22px;
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+      background: #14122a;
+      border: 1px solid rgba(124,119,209,.16);
+    }
+    .glow {
+      position: absolute;
+      top: -20px; right: -20px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .word-meta { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+    .word-num  { font-size: 13px; color: #3a3860; }
+    .pos-badge { font-size: 12px; font-weight: 600; padding: 3px 11px; border-radius: 5px; }
+    .word-en   {
+      font-size: 48px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -1px;
+      margin-bottom: 6px;
+      line-height: 1.1;
+    }
+    .word-ja   { font-size: 24px; font-weight: 500; margin-bottom: 22px; opacity: .9; }
+
+    .example-box {
+      background: #0e0c20;
+      border-radius: 14px;
+      padding: 18px 18px;
+    }
+    .ex-en {
+      font-size: 17px;
+      color: #c0bce8;
+      line-height: 1.75;
+      margin-bottom: 9px;
+      font-weight: 500;
+    }
+    .ex-ja { font-size: 14px; color: #5c5888; line-height: 1.6; margin-bottom: 16px; }
+    .speak-btn {
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 15px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #1e1b38;
+      border: 1px solid #2e2b50;
+      color: #7c77a8;
+    }
+    .speak-btn.active { border-color: rgba(124,119,209,.6); color: #7c77d1; background: rgba(124,119,209,.13); }
+
+    /* ── Conjugation Card ── */
+    .conj-card {
+      border-radius: 18px;
+      padding: 22px 22px;
+      margin-bottom: 14px;
+      background: #0f1a14;
+      border: 1px solid rgba(80,200,120,.2);
+    }
+    .conj-header { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; }
+    .conj-label  { font-size: 11px; letter-spacing: .15em; color: #3a8a56; text-transform: uppercase; font-weight: 600; }
+    .conj-rows   { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+    .conj-row    {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #0a1a10;
+      border-radius: 12px;
+      padding: 14px 18px;
+    }
+    .conj-role { font-size: 12px; color: #3a6a46; width: 56px; flex-shrink: 0; }
+    .conj-form { font-size: 30px; font-weight: 800; color: #fff; letter-spacing: -.5px; flex: 1; }
+    .conj-form.same { color: #5a7a62; font-size: 26px; }
+    .conj-play {
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 15px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .2s;
+      background: #1a3a22;
+      border: 1px solid #2a5a32;
+      color: #60c070;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+    .conj-play.playing { background: rgba(80,200,120,.15); border-color: rgba(80,200,120,.5); color: #80e090; }
+
+    /* ── Quiz Card ── */
+    .quiz-card {
+      border-radius: 18px;
+      padding: 24px 22px;
+      margin-bottom: 14px;
+      background: #13102a;
+      border: 1px solid rgba(155,121,224,.2);
+    }
+    .quiz-review-badge {
+      font-size: 11px;
+      background: #2a1a40;
+      color: #9b79e0;
+      border: 1px solid #4a2a70;
+      border-radius: 5px;
+      padding: 3px 10px;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+    .quiz-sentence {
+      font-size: 19px;
+      color: #c0bce8;
+      line-height: 1.85;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .quiz-blank {
+      display: inline-block;
+      background: #2a2050;
+      border-bottom: 2.5px solid #6a5aaa;
+      color: #6a5aaa;
+      padding: 0 14px;
+      border-radius: 5px 5px 0 0;
+      font-weight: 700;
+      font-size: 19px;
+      min-width: 90px;
+      text-align: center;
+    }
+    .quiz-ja { font-size: 14px; color: #5c5888; line-height: 1.6; margin-bottom: 22px; }
+    .choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .choice-btn {
+      padding: 20px 12px;
+      border-radius: 14px;
+      font-size: 19px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .15s;
+      background: #1a1730;
+      border: 1px solid #2e2b50;
+      color: #c0bce8;
+      text-align: center;
+      line-height: 1.3;
+      letter-spacing: -.02em;
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .choice-btn:hover:not(:disabled) { background: #242040; border-color: #4a4080; }
+    .choice-btn:active:not(:disabled) { transform: scale(0.97); }
+    .choice-btn.correct   { background: #0a2a10!important; border-color: #40a060!important; color: #60e080!important; }
+    .choice-btn.wrong     { background: #2a0a0a!important; border-color: #a04040!important; color: #e06060!important; }
+    .choice-btn.show-correct { background: #0a2a10!important; border-color: #40a060!important; color: #60e080!important; }
+    .choice-btn:disabled { cursor: default; }
+    .quiz-result {
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 14px;
+      padding: 13px 16px;
+      border-radius: 12px;
+      display: none;
+      line-height: 1.6;
+    }
+    .quiz-result.correct { background: #0a2010; color: #50d070; border: 1px solid #1a5028; display: block; }
+    .quiz-result.wrong   { background: #200a0a; color: #e06060; border: 1px solid #501818; display: block; }
+
+    /* ── Nav Buttons ── */
+    .nav { display: flex; gap: 12px; }
+    .nav-btn {
+      padding: 17px 16px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      min-height: 58px;
+    }
+    .nb-prev { flex: 1; background: #1a1730; border: 1px solid #2e2b50; color: #7c77a8; }
+    .nb-prev:disabled { background: #0e0c1e; color: #2e2b50; cursor: default; }
+    .nb-study { flex: 2; background: #3a36a8; color: #fff; border: none; }
+    .nb-study:hover { background: #4a44c8; }
+    .nb-conj  { flex: 2; background: #1a3a22; color: #60c070; border: 1px solid #2a5a32; }
+    .nb-quiz  { flex: 2; background: #3a2880; color: #c8b0f8; border: none; }
+    .nb-quiz:hover { background: #4a38a0; }
+
+    /* ── Summary ── */
+    .summary-card {
+      border-radius: 18px;
+      padding: 26px 22px;
+      background: #13102a;
+      border: 1px solid rgba(155,121,224,.2);
+      margin-bottom: 14px;
+    }
+    .summary-title { font-size: 20px; font-weight: 700; color: #e8e4ff; margin-bottom: 18px; }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 13px 0;
+      border-bottom: 1px solid #1e1b30;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-label { font-size: 15px; color: #7c77a8; }
+    .summary-val   { font-size: 24px; font-weight: 700; }
+    .val-good { color: #50c878; } .val-warn { color: #f5a623; } .val-bad { color: #e06060; }
+    .weak-list { margin-top: 18px; }
+    .weak-title { font-size: 12px; color: #5c59a0; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
+    .weak-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: #0e0c20;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+    .weak-word { font-size: 17px; font-weight: 700; color: #c0bce8; }
+    .weak-cnt  { font-size: 12px; color: #9b79e0; background: #2a1a40; padding: 3px 10px; border-radius: 5px; }
+
+    /* ── History ── */
+    .hist-section { margin-top: 20px; border-top: 1px solid #1e1b30; padding-top: 18px; }
+    .hist-title { font-size: 12px; color: #5c59a0; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 14px; }
+    .hist-chart { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin-bottom: 12px; }
+    .hist-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 0; }
+    .hist-bar-bg   { width: 100%; background: #1a1730; border-radius: 4px; overflow: hidden; height: 56px; display: flex; align-items: flex-end; }
+    .hist-bar-fill { width: 100%; border-radius: 3px; transition: height .5s ease; min-height: 3px; }
+    .hist-bar-pct  { font-size: 9px; color: #5c5888; text-align: center; width: 100%; }
+    .hist-bar-date { font-size: 9px; color: #3a3860; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hist-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #13112a; }
+    .hist-row:last-child { border-bottom: none; }
+    .hist-row-date { font-size: 13px; color: #7c77a8; flex: 1; }
+    .hist-row-day  { font-size: 12px; color: #3a3860; width: 48px; text-align: center; }
+    .hist-row-bar  { flex: 2; height: 6px; background: #1a1730; border-radius: 3px; overflow: hidden; margin: 0 10px; }
+    .hist-row-fill { height: 100%; border-radius: 3px; }
+    .hist-row-pct  { font-size: 15px; font-weight: 700; width: 40px; text-align: right; }
+
+    /* ── Stats page ── */
+    .stats-page { padding: 4px 0; }
+    .stats-back {
+      display: flex; align-items: center; gap: 8px;
+      background: none; border: none;
+      color: #5c59a0; font-size: 14px;
+      font-family: inherit; cursor: pointer;
+      padding: 4px 0 22px; width: 100%;
+    }
+    .stats-back:hover { color: #8884cc; }
+    .stats-section-title { font-size: 12px; color: #5c59a0; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 14px; margin-top: 4px; }
+
+    /* ── Center message ── */
+    .center-msg { text-align: center; padding: 56px 24px; }
+    .center-icon  { font-size: 40px; margin-bottom: 12px; }
+    .center-title { font-size: 20px; font-weight: 700; color: #8884cc; margin-bottom: 8px; }
+    .center-sub   { font-size: 14px; color: #5c59a0; line-height: 1.8; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
@@ -121,6 +394,7 @@
     </div>
     <input type="date" id="dateInput" value="2026-04-20" min="2026-04-20" max="2026-05-30"/>
   </div>
+
   <div class="day-info">
     <div class="day-row">
       <span class="day-badge" id="dayBadge">Day 1</span>
@@ -130,27 +404,39 @@
     </div>
     <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
   </div>
+
   <div class="main">
+
     <!-- モード選択 -->
     <div id="modeSelectView" class="hidden">
       <div class="mode-select">
-        <div class="mode-select-title" id="modeSelectTitle"></div>
+        <div class="mode-select-title" id="modeSelectTitle">Day 1</div>
+        <div class="mode-select-sub" id="modeSelectSub">どちらから始めますか？</div>
         <button class="mode-btn mode-btn-study" onclick="startStudy()">
           <span class="mode-btn-icon">📖</span>
-          <div class="mode-btn-text">
+          <div>
             <div class="mode-btn-label">学習モード</div>
             <div class="mode-btn-desc">単語カード → 活用形の順に学ぶ</div>
           </div>
         </button>
         <button class="mode-btn mode-btn-quiz" onclick="startQuizFromSelect()">
           <span class="mode-btn-icon">✏️</span>
-          <div class="mode-btn-text">
+          <div>
             <div class="mode-btn-label">クイズモード</div>
             <div class="mode-btn-desc">今日の単語＋復習語で4択テスト</div>
           </div>
         </button>
+        <button class="mode-btn mode-btn-stats" onclick="showStats()">
+          <span class="mode-btn-icon">📊</span>
+          <div>
+            <div class="mode-btn-label">成果を見る</div>
+            <div class="mode-btn-desc">スコア履歴・苦手な単語を確認</div>
+          </div>
+        </button>
       </div>
     </div>
+
+    <!-- 学習: 単語カード -->
     <div id="wordCardView" class="hidden">
       <div class="word-card" id="wordCard">
         <div class="glow" id="glowEl"></div>
@@ -171,6 +457,8 @@
         <button class="nav-btn nb-study" id="nextBtn" onclick="goNext()">次へ →</button>
       </div>
     </div>
+
+    <!-- 学習: 活用カード -->
     <div id="conjCardView" class="hidden">
       <div class="conj-card">
         <div class="conj-header"><span class="conj-label">動詞の活用形</span></div>
@@ -182,6 +470,8 @@
         <button class="nav-btn nb-study" id="conjNextBtn" onclick="goNextWord()">次の単語 →</button>
       </div>
     </div>
+
+    <!-- クイズ: 問題 -->
     <div id="quizCardView" class="hidden">
       <div class="quiz-card">
         <div class="quiz-review-badge hidden" id="reviewBadge">復習問題</div>
@@ -190,10 +480,12 @@
         <div class="choices" id="choicesGrid"></div>
         <div class="quiz-result" id="quizResult"></div>
       </div>
-      <div class="nav" style="margin-top:12px">
+      <div class="nav" style="margin-top:14px">
         <button class="nav-btn nb-quiz" id="quizNextBtn" onclick="nextQuizQ()" style="display:none;flex:1">次の問題 →</button>
       </div>
     </div>
+
+    <!-- クイズ: 結果 -->
     <div id="summaryView" class="hidden">
       <div class="summary-card">
         <div class="summary-title">クイズ結果</div>
@@ -207,8 +499,26 @@
           <div id="histList"></div>
         </div>
       </div>
-      <div class="nav"><button class="nav-btn nb-study" style="flex:1" onclick="finishDay()">もう一度学習する</button></div>
+      <div class="nav" style="gap:12px">
+        <button class="nav-btn nb-prev" style="flex:1" onclick="showView('modeSelectView')">ホームに戻る</button>
+        <button class="nav-btn nb-study" style="flex:2" onclick="finishDay()">もう一度学習する</button>
+      </div>
     </div>
+
+    <!-- 成果ページ -->
+    <div id="statsView" class="hidden">
+      <div class="stats-page">
+        <button class="stats-back" onclick="showView('modeSelectView')">← ホームに戻る</button>
+        <div class="stats-section-title">スコア履歴</div>
+        <div class="hist-chart" id="statsChart"></div>
+        <div id="statsList"></div>
+        <div style="margin-top:22px">
+          <div class="stats-section-title">苦手な単語</div>
+          <div id="statsWeak"></div>
+        </div>
+      </div>
+    </div>
+
     <div id="noDataView" class="center-msg hidden">
       <div class="center-icon">📚</div>
       <div class="center-title">この日のデータはまだ準備中</div>
@@ -221,6 +531,7 @@
     </div>
   </div>
 </div>
+
 <script>
 const ALL_WORDS = [
 {"n":1,"word":"get","pos":"動詞","meaning":"得る、手に入れる","ex_en":"I ___ a new bag for school.","ex_ja":"学校用の新しいかばんをもらった。","conj":"get|got|gotten","ans":"got"},
@@ -475,7 +786,6 @@ const ALL_WORDS = [
 {"n":250,"word":"subject","pos":"名詞","meaning":"科目、話題","ex_en":"My favorite ___ is English.","ex_ja":"好きな科目は英語だ。","conj":"","ans":"subject"}
 ];
 
-// ── 活用形ヘルパー ─────────────────────────────────────────
 function make3sg(w){
   if(/[^aeiou]y$/.test(w)) return w.slice(0,-1)+'ies';
   if(/(s|sh|ch|x|o)$/.test(w)) return w+'es';
@@ -484,13 +794,8 @@ function make3sg(w){
 function makePast(w,conj){
   if(conj){const f=conj.split('|');if(f[1])return f[1];}
   if(/[^aeiou]y$/.test(w)) return w.slice(0,-1)+'ied';
-  if(/[^aeiou]$/.test(w)&&w.length<=4) return w+w.slice(-1)+'ed';
   if(/e$/.test(w)) return w+'d';
   return w+'ed';
-}
-function makePP(w,conj){
-  if(conj){const f=conj.split('|');if(f[2])return f[2];}
-  return makePast(w,conj);
 }
 function makePlural(w){
   if(w==='child') return 'children';
@@ -501,8 +806,6 @@ function makePlural(w){
   if(/(s|sh|ch|x)$/.test(w)) return w+'es';
   return w+'s';
 }
-
-// 正解の語形タイプを判定
 function detectFormType(correctWord, ans, conj, pos){
   if(!ans||ans.toLowerCase()===correctWord.toLowerCase()) return {type:'base'};
   if(conj){
@@ -520,28 +823,19 @@ function detectFormType(correctWord, ans, conj, pos){
   }
   return {type:'base'};
 }
-
-// 同じ語形タイプをdistractorに適用
 function applyForm(distractor, formInfo){
   const w=distractor.word, c=distractor.conj||'', p=distractor.pos;
-  if(formInfo.type==='conj'){
-    const f=c.split('|');
-    return f[formInfo.idx]||w;
-  }
+  if(formInfo.type==='conj'){const f=c.split('|');return f[formInfo.idx]||w;}
   if(formInfo.type==='3sg'&&p==='動詞') return make3sg(w);
   if(formInfo.type==='plural'&&p==='名詞') return makePlural(w);
   return w;
 }
-
 function getDistractors(w, n) {
-  // 同じposの語を優先
   const formInfo = detectFormType(w.word, w.ans, w.conj||'', w.pos);
   const samePos = ALL_WORDS.filter(x=>x.word!==w.word&&x.pos===w.pos);
   const pool = samePos.length>=n ? samePos : ALL_WORDS.filter(x=>x.word!==w.word);
-  // shuffle and pick
   const shuffled = [...pool].sort(()=>Math.random()-.5).slice(0,n);
   return shuffled.map(d=>{
-    // 同じposで同じ語形タイプを適用
     if(d.pos===w.pos) return applyForm(d, formInfo);
     return d.word;
   });
@@ -550,10 +844,11 @@ function getDistractors(w, n) {
 
 const START=new Date("2026-04-20T00:00:00"),PER_DAY=25,MAX_W=1200;
 const PC={"動詞":"#50c878","名詞":"#5b8dee","形容詞":"#f5a623","副詞":"#c97bf5","前置詞":"#f07878","接続詞":"#78d4f0"};
-const CL=["原形","過去形","過去分詞"],SRS_KEY="eiken3_srs_v3";
+const CL=["原形","過去形","過去分詞"],SRS_KEY="eiken3_srs_v3",HIST_KEY="eiken3_hist_v1";
 
 function loadSRS(){try{return JSON.parse(localStorage.getItem(SRS_KEY)||"{}")}catch(e){return{}}}
 function saveSRS(d){try{localStorage.setItem(SRS_KEY,JSON.stringify(d))}catch(e){}}
+function loadHist(){try{return JSON.parse(localStorage.getItem(HIST_KEY)||"[]")}catch(e){return[]}}
 function addDays(s,n){const d=new Date(s+"T00:00:00");d.setDate(d.getDate()+n);return d.toISOString().split("T")[0]}
 function todayStr(){return new Date().toISOString().split("T")[0]}
 
@@ -563,30 +858,33 @@ function recordResult(n,ok){
   else{rec.wrong=(rec.wrong||0)+1;rec.interval=Math.max(1,Math.ceil(3/rec.wrong));rec.nextDate=addDays(todayStr(),rec.interval);}
   srs[n]=rec;saveSRS(srs);
 }
-
 function getReviewWords(dateStr){
   const srs=loadSRS();
-  return Object.entries(srs)
-    .filter(([,r])=>r.nextDate&&r.nextDate<=dateStr&&r.wrong>0)
+  return Object.entries(srs).filter(([,r])=>r.nextDate&&r.nextDate<=dateStr&&r.wrong>0)
     .map(([n])=>ALL_WORDS.find(w=>w.n===parseInt(n))).filter(Boolean);
 }
+function saveScore(dateStr,day,correct,total,rate){
+  const hist=loadHist(),idx=hist.findIndex(h=>h.date===dateStr);
+  const rec={date:dateStr,day,correct,total,rate};
+  if(idx>=0){if(rate>=hist[idx].rate)hist[idx]=rec;}else hist.push(rec);
+  hist.sort((a,b)=>a.date.localeCompare(b.date));
+  try{localStorage.setItem(HIST_KEY,JSON.stringify(hist))}catch(e){}
+}
+function rateColor(r){return r>=80?"#50c878":r>=60?"#f5a623":"#e06060"}
 
 let dayWords=[],wordIdx=0,quizQueue=[],quizIdx=0,qCorrect=0,qWrong=0,curDate="2026-04-20",qAnswered=false;
-
 function dateToDay(s){const d=new Date(s+"T00:00:00");return Math.max(1,Math.floor((d-START)/86400000)+1)}
 
 function showView(id){
-  ["modeSelectView","wordCardView","conjCardView","quizCardView","summaryView","noDataView","completeView"]
+  ["modeSelectView","statsView","wordCardView","conjCardView","quizCardView","summaryView","noDataView","completeView"]
     .forEach(v=>document.getElementById(v).classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
 }
-
 function setMode(m){
   const mb=document.getElementById("modeBadge");
   if(m==="quiz"){mb.textContent="クイズ";mb.className="mode-badge mode-quiz";}
   else{mb.textContent="学習";mb.className="mode-badge mode-study";}
 }
-
 function updProgress(cur,tot,posKey){
   const acc=PC[posKey]||"#7c77d1",pct=tot>0?(cur/tot)*100:0;
   const pf=document.getElementById("progressFill");
@@ -602,7 +900,6 @@ function renderWord(){
   const pb=document.getElementById("posBadge");pb.textContent=w.pos;pb.style.background=acc+"22";pb.style.color=acc;
   document.getElementById("wordEn").textContent=w.word;
   const wj=document.getElementById("wordJa");wj.style.color=acc;wj.textContent=w.meaning;
-  // 学習モードでは実際の活用形（ans）で表示
   const ans=w.ans||w.word;
   document.getElementById("exEn").textContent=w.ex_en.replace(/___/g,ans);
   document.getElementById("exJa").textContent=w.ex_ja;
@@ -615,17 +912,14 @@ function renderWord(){
   else{nb.textContent="次の単語 →";nb.className="nav-btn nb-study";}
   updProgress(wordIdx+1,dayWords.length,w.pos);setMode("study");showView("wordCardView");
 }
-
 function speakExample(){
   const w=dayWords[wordIdx],btn=document.getElementById("speakBtn");
   btn.textContent="♪ 読み上げ中...";btn.className="speak-btn active";
   speechSynthesis.cancel();
-  const ans=w.ans||w.word;
-  const u=new SpeechSynthesisUtterance(w.ex_en.replace(/___/g,ans));
+  const u=new SpeechSynthesisUtterance(w.ex_en.replace(/___/g,w.ans||w.word));
   u.lang="en-US";u.rate=0.8;u.onend=()=>{btn.textContent="▶ 例文を音読";btn.className="speak-btn";};
   speechSynthesis.speak(u);
 }
-
 function goNext(){
   const w=dayWords[wordIdx];
   if(w.conj&&w.conj.length>0)renderConj();
@@ -680,11 +974,8 @@ function renderQuizQ(){
   document.getElementById("wordRange").textContent=`クイズ ${quizIdx+1} / ${quizQueue.length}`;
   const rb=document.getElementById("reviewBadge");
   w._rev?rb.classList.remove("hidden"):rb.classList.add("hidden");
-  // 空欄表示
   document.getElementById("quizSentence").innerHTML=w.ex_en.replace(/___/g,'<span class="quiz-blank">＿＿＿</span>');
   document.getElementById("quizJa").textContent=w.ex_ja;
-
-  // 正解の語形（ans）を小文字で統一
   const ans=(w.ans||w.word).toLowerCase();
   const distractors=getDistractors(w,3).map(d=>d.toLowerCase());
   const choices=shuffle([ans,...distractors]);
@@ -719,53 +1010,18 @@ function answerQ(chosen,ans,word,clickedBtn){
 
 function nextQuizQ(){quizIdx++;renderQuizQ();}
 
-const HIST_KEY="eiken3_hist_v1";
-function loadHist(){try{return JSON.parse(localStorage.getItem(HIST_KEY)||"[]")}catch(e){return[]}}
-function saveResult(dateStr,day,correct,total,rate){
-  const hist=loadHist();
-  // 同じ日付は上書き（その日の最高スコア）
-  const idx=hist.findIndex(h=>h.date===dateStr);
-  const rec={date:dateStr,day,correct,total,rate};
-  if(idx>=0){if(rate>=hist[idx].rate)hist[idx]=rec;}
-  else hist.push(rec);
-  hist.sort((a,b)=>a.date.localeCompare(b.date));
-  try{localStorage.setItem(HIST_KEY,JSON.stringify(hist))}catch(e){}
-}
-function rateColor(r){return r>=80?"#50c878":r>=60?"#f5a623":"#e06060"}
-
-function renderHistory(){
-  const hist=loadHist();
-  const chart=document.getElementById("histChart");
-  const list=document.getElementById("histList");
-  if(!hist.length){
-    chart.innerHTML="";list.innerHTML="";
-    document.getElementById("histSection").style.display="none";
-    return;
-  }
-  document.getElementById("histSection").style.display="block";
-  // Bar chart: show last 14 entries
+function renderHistChart(hist,chartId,listId){
+  const chart=document.getElementById(chartId);
+  const list=document.getElementById(listId);
+  if(!hist.length){chart.innerHTML="";list.innerHTML="";return;}
   const recent=hist.slice(-14);
   chart.innerHTML=recent.map(h=>{
-    const pct=h.rate,col=rateColor(pct);
-    const hpx=Math.round(52*pct/100);
-    const md=h.date.slice(5); // MM-DD
-    return `<div class="hist-bar-wrap">
-      <div class="hist-bar-pct">${pct}%</div>
-      <div class="hist-bar-bg"><div class="hist-bar-fill" style="height:${hpx}px;background:${col}"></div></div>
-      <div class="hist-bar-date">${md}</div>
-    </div>`;
+    const col=rateColor(h.rate),hpx=Math.round(56*h.rate/100),md=h.date.slice(5);
+    return `<div class="hist-bar-wrap"><div class="hist-bar-pct">${h.rate}%</div><div class="hist-bar-bg"><div class="hist-bar-fill" style="height:${hpx}px;background:${col}"></div></div><div class="hist-bar-date">${md}</div></div>`;
   }).join("");
-  // List: all entries, newest first
-  const allDesc=[...hist].reverse();
-  list.innerHTML=allDesc.map(h=>{
+  list.innerHTML=[...hist].reverse().map(h=>{
     const col=rateColor(h.rate);
-    const w=h.rate;
-    return `<div class="hist-row">
-      <span class="hist-row-date">${h.date}</span>
-      <span class="hist-row-day">Day ${h.day}</span>
-      <div class="hist-row-bar"><div class="hist-row-fill" style="width:${w}%;background:${col}"></div></div>
-      <span class="hist-row-pct" style="color:${col}">${h.rate}%</span>
-    </div>`;
+    return `<div class="hist-row"><span class="hist-row-date">${h.date}</span><span class="hist-row-day">Day ${h.day}</span><div class="hist-row-bar"><div class="hist-row-fill" style="width:${h.rate}%;background:${col}"></div></div><span class="hist-row-pct" style="color:${col}">${h.rate}%</span></div>`;
   }).join("");
 }
 
@@ -776,21 +1032,33 @@ function showSummary(){
   const re=document.getElementById("sumRate");re.textContent=rate+"%";
   re.className="summary-val "+(rate>=80?"val-good":rate>=60?"val-warn":"val-bad");
   const srs=loadSRS();
-  const weak=Object.entries(srs).filter(([,r])=>r.wrong>=2)
-    .sort(([,a],[,b])=>b.wrong-a.wrong).slice(0,5)
-    .map(([n,r])=>{const w=ALL_WORDS.find(x=>x.n===parseInt(n));return w?{word:w.word,ans:w.ans||w.word,wrong:r.wrong}:null;}).filter(Boolean);
+  const weak=Object.entries(srs).filter(([,r])=>r.wrong>=2).sort(([,a],[,b])=>b.wrong-a.wrong).slice(0,5)
+    .map(([n,r])=>{const w=ALL_WORDS.find(x=>x.n===parseInt(n));return w?{word:w.word,ans:(w.ans||w.word).toLowerCase(),wrong:r.wrong}:null;}).filter(Boolean);
   const wl=document.getElementById("weakList");
   wl.innerHTML=weak.length>0?`<div class="weak-title">苦手な単語</div>`+
-    weak.map(w=>`<div class="weak-item"><span class="weak-word">${w.word} <span style="font-size:12px;color:#6a6888">(${w.ans})</span></span><span class="weak-cnt">${w.wrong}回間違え</span></div>`).join(""):"";
+    weak.map(w=>`<div class="weak-item"><span class="weak-word">${w.word} <span style="font-size:13px;color:#6a6888">(${w.ans})</span></span><span class="weak-cnt">${w.wrong}回間違え</span></div>`).join(""):"";
+  saveScore(curDate,dateToDay(curDate),qCorrect,tot,rate);
+  renderHistChart(loadHist(),"histChart","histList");
+  document.getElementById("histSection").style.display="block";
   document.getElementById("wordRange").textContent="クイズ完了";
   document.getElementById("counter").classList.add("hidden");
-  saveResult(curDate, dateToDay(curDate), qCorrect, tot, rate);
-  renderHistory();
   showView("summaryView");
 }
 
-function finishDay(){wordIdx=0;renderWord();}
+function showStats(){
+  const hist=loadHist();
+  renderHistChart(hist,"statsChart","statsList");
+  const srs=loadSRS();
+  const weak=Object.entries(srs).filter(([,r])=>r.wrong>=2).sort(([,a],[,b])=>b.wrong-a.wrong).slice(0,10)
+    .map(([n,r])=>{const w=ALL_WORDS.find(x=>x.n===parseInt(n));return w?{word:w.word,ans:(w.ans||w.word).toLowerCase(),wrong:r.wrong}:null;}).filter(Boolean);
+  const sw=document.getElementById("statsWeak");
+  sw.innerHTML=weak.length>0
+    ?weak.map(w=>`<div class="weak-item"><span class="weak-word">${w.word} <span style="font-size:13px;color:#6a6888">(${w.ans})</span></span><span class="weak-cnt">${w.wrong}回間違え</span></div>`).join("")
+    :'<div style="font-size:14px;color:#3a3860;padding:10px 0">苦手な単語はまだありません 🎉</div>';
+  showView("statsView");
+}
 
+function finishDay(){wordIdx=0;renderWord();}
 function startStudy(){renderWord();}
 function startQuizFromSelect(){startQuiz();}
 
@@ -804,13 +1072,12 @@ function loadDay(s){
   if(st>MAX_W){showView("completeView");return;}
   dayWords=ALL_WORDS.filter(w=>w.n>=st&&w.n<=en);
   if(!dayWords.length){showView("noDataView");return;}
-  setMode("study");
-  // モード選択画面を表示
   const revCount=getReviewWords(s).filter(w=>!dayWords.find(d=>d.n===w.n)).length;
-  const desc=revCount>0?`復習語 ${revCount}語あり`:"今日の25語でテスト";
-  document.getElementById("modeSelectTitle").textContent=`Day ${day} — どちらから始めますか？`;
-  showView("modeSelectView");
+  document.getElementById("modeSelectTitle").textContent="Day "+day;
+  document.getElementById("modeSelectSub").textContent=revCount>0?`今日の25語 + 復習語 ${revCount}語`:"今日の25語で学習・テスト";
+  setMode("study");showView("modeSelectView");
 }
+
 document.getElementById("dateInput").addEventListener("change",e=>loadDay(e.target.value));
 loadDay("2026-04-20");
 </script>
