@@ -84,6 +84,21 @@
     .center-title{font-size:16px;font-weight:700;color:#8884cc;margin-bottom:6px}
     .center-sub{font-size:12px;color:#5c59a0;line-height:1.8}
     .hidden{display:none}
+    .hist-section{margin-top:18px;border-top:1px solid #1e1b30;padding-top:16px}
+    .hist-title{font-size:11px;color:#5c59a0;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+    .hist-chart{display:flex;align-items:flex-end;gap:5px;height:72px;margin-bottom:10px}
+    .hist-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:0}
+    .hist-bar-bg{width:100%;background:#1a1730;border-radius:4px;overflow:hidden;height:52px;display:flex;align-items:flex-end}
+    .hist-bar-fill{width:100%;border-radius:4px;transition:height .5s ease;min-height:3px}
+    .hist-bar-pct{font-size:9px;color:#5c5888;white-space:nowrap;text-align:center;width:100%}
+    .hist-bar-date{font-size:9px;color:#3a3860;white-space:nowrap;text-align:center;width:100%;overflow:hidden;text-overflow:ellipsis}
+    .hist-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #13112a}
+    .hist-row:last-child{border-bottom:none}
+    .hist-row-date{font-size:12px;color:#7c77a8;flex:1}
+    .hist-row-day{font-size:11px;color:#3a3860;width:42px;text-align:center}
+    .hist-row-bar{flex:2;height:6px;background:#1a1730;border-radius:3px;overflow:hidden;margin:0 8px}
+    .hist-row-fill{height:100%;border-radius:3px}
+    .hist-row-pct{font-size:13px;font-weight:700;width:36px;text-align:right}
   </style>
 </head>
 <body>
@@ -155,6 +170,11 @@
         <div class="summary-row"><span class="summary-label">不正解</span><span class="summary-val val-bad" id="sumWrong"></span></div>
         <div class="summary-row"><span class="summary-label">正答率</span><span class="summary-val" id="sumRate"></span></div>
         <div class="weak-list" id="weakList"></div>
+        <div class="hist-section" id="histSection">
+          <div class="hist-title">スコア履歴</div>
+          <div class="hist-chart" id="histChart"></div>
+          <div id="histList"></div>
+        </div>
       </div>
       <div class="nav"><button class="nav-btn nb-study" style="flex:1" onclick="finishDay()">もう一度学習する</button></div>
     </div>
@@ -668,6 +688,56 @@ function answerQ(chosen,ans,word,clickedBtn){
 
 function nextQuizQ(){quizIdx++;renderQuizQ();}
 
+const HIST_KEY="eiken3_hist_v1";
+function loadHist(){try{return JSON.parse(localStorage.getItem(HIST_KEY)||"[]")}catch(e){return[]}}
+function saveResult(dateStr,day,correct,total,rate){
+  const hist=loadHist();
+  // 同じ日付は上書き（その日の最高スコア）
+  const idx=hist.findIndex(h=>h.date===dateStr);
+  const rec={date:dateStr,day,correct,total,rate};
+  if(idx>=0){if(rate>=hist[idx].rate)hist[idx]=rec;}
+  else hist.push(rec);
+  hist.sort((a,b)=>a.date.localeCompare(b.date));
+  try{localStorage.setItem(HIST_KEY,JSON.stringify(hist))}catch(e){}
+}
+function rateColor(r){return r>=80?"#50c878":r>=60?"#f5a623":"#e06060"}
+
+function renderHistory(){
+  const hist=loadHist();
+  const chart=document.getElementById("histChart");
+  const list=document.getElementById("histList");
+  if(!hist.length){
+    chart.innerHTML="";list.innerHTML="";
+    document.getElementById("histSection").style.display="none";
+    return;
+  }
+  document.getElementById("histSection").style.display="block";
+  // Bar chart: show last 14 entries
+  const recent=hist.slice(-14);
+  chart.innerHTML=recent.map(h=>{
+    const pct=h.rate,col=rateColor(pct);
+    const hpx=Math.round(52*pct/100);
+    const md=h.date.slice(5); // MM-DD
+    return `<div class="hist-bar-wrap">
+      <div class="hist-bar-pct">${pct}%</div>
+      <div class="hist-bar-bg"><div class="hist-bar-fill" style="height:${hpx}px;background:${col}"></div></div>
+      <div class="hist-bar-date">${md}</div>
+    </div>`;
+  }).join("");
+  // List: all entries, newest first
+  const allDesc=[...hist].reverse();
+  list.innerHTML=allDesc.map(h=>{
+    const col=rateColor(h.rate);
+    const w=h.rate;
+    return `<div class="hist-row">
+      <span class="hist-row-date">${h.date}</span>
+      <span class="hist-row-day">Day ${h.day}</span>
+      <div class="hist-row-bar"><div class="hist-row-fill" style="width:${w}%;background:${col}"></div></div>
+      <span class="hist-row-pct" style="color:${col}">${h.rate}%</span>
+    </div>`;
+  }).join("");
+}
+
 function showSummary(){
   const tot=quizQueue.length,rate=tot>0?Math.round((qCorrect/tot)*100):0;
   document.getElementById("sumCorrect").textContent=qCorrect+" 問";
@@ -683,6 +753,8 @@ function showSummary(){
     weak.map(w=>`<div class="weak-item"><span class="weak-word">${w.word} <span style="font-size:12px;color:#6a6888">(${w.ans})</span></span><span class="weak-cnt">${w.wrong}回間違え</span></div>`).join(""):"";
   document.getElementById("wordRange").textContent="クイズ完了";
   document.getElementById("counter").classList.add("hidden");
+  saveResult(curDate, dateToDay(curDate), qCorrect, tot, rate);
+  renderHistory();
   showView("summaryView");
 }
 
