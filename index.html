@@ -84,6 +84,17 @@
     .center-title{font-size:16px;font-weight:700;color:#8884cc;margin-bottom:6px}
     .center-sub{font-size:12px;color:#5c59a0;line-height:1.8}
     .hidden{display:none}
+    .mode-select{padding:24px 0 8px}
+    .mode-select-title{font-size:13px;color:#5c59a0;text-align:center;margin-bottom:20px}
+    .mode-btn{display:flex;align-items:center;gap:16px;width:100%;padding:18px 20px;border-radius:14px;border:1px solid;cursor:pointer;font-family:inherit;text-align:left;margin-bottom:12px;transition:all .15s}
+    .mode-btn-study{background:#0a2010;border-color:#1a4a28;color:#c0e8c8}
+    .mode-btn-study:hover{background:#0e2a18;border-color:#2a6a38}
+    .mode-btn-quiz{background:#1a1230;border-color:#3a2860;color:#c8b0f8}
+    .mode-btn-quiz:hover{background:#201840;border-color:#4a3880}
+    .mode-btn-icon{font-size:28px;flex-shrink:0}
+    .mode-btn-text{}
+    .mode-btn-label{font-size:15px;font-weight:700;margin-bottom:3px}
+    .mode-btn-desc{font-size:12px;opacity:.7;line-height:1.5}
     .hist-section{margin-top:18px;border-top:1px solid #1e1b30;padding-top:16px}
     .hist-title{font-size:11px;color:#5c59a0;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
     .hist-chart{display:flex;align-items:flex-end;gap:5px;height:72px;margin-bottom:10px}
@@ -120,6 +131,26 @@
     <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
   </div>
   <div class="main">
+    <!-- モード選択 -->
+    <div id="modeSelectView" class="hidden">
+      <div class="mode-select">
+        <div class="mode-select-title" id="modeSelectTitle"></div>
+        <button class="mode-btn mode-btn-study" onclick="startStudy()">
+          <span class="mode-btn-icon">📖</span>
+          <div class="mode-btn-text">
+            <div class="mode-btn-label">学習モード</div>
+            <div class="mode-btn-desc">単語カード → 活用形の順に学ぶ</div>
+          </div>
+        </button>
+        <button class="mode-btn mode-btn-quiz" onclick="startQuizFromSelect()">
+          <span class="mode-btn-icon">✏️</span>
+          <div class="mode-btn-text">
+            <div class="mode-btn-label">クイズモード</div>
+            <div class="mode-btn-desc">今日の単語＋復習語で4択テスト</div>
+          </div>
+        </button>
+      </div>
+    </div>
     <div id="wordCardView" class="hidden">
       <div class="word-card" id="wordCard">
         <div class="glow" id="glowEl"></div>
@@ -545,7 +576,7 @@ let dayWords=[],wordIdx=0,quizQueue=[],quizIdx=0,qCorrect=0,qWrong=0,curDate="20
 function dateToDay(s){const d=new Date(s+"T00:00:00");return Math.max(1,Math.floor((d-START)/86400000)+1)}
 
 function showView(id){
-  ["wordCardView","conjCardView","quizCardView","summaryView","noDataView","completeView"]
+  ["modeSelectView","wordCardView","conjCardView","quizCardView","summaryView","noDataView","completeView"]
     .forEach(v=>document.getElementById(v).classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
 }
@@ -653,9 +684,9 @@ function renderQuizQ(){
   document.getElementById("quizSentence").innerHTML=w.ex_en.replace(/___/g,'<span class="quiz-blank">＿＿＿</span>');
   document.getElementById("quizJa").textContent=w.ex_ja;
 
-  // 正解の語形（ans）+ 同形のdistractor
-  const ans=w.ans||w.word;
-  const distractors=getDistractors(w,3);
+  // 正解の語形（ans）を小文字で統一
+  const ans=(w.ans||w.word).toLowerCase();
+  const distractors=getDistractors(w,3).map(d=>d.toLowerCase());
   const choices=shuffle([ans,...distractors]);
   const grid=document.getElementById("choicesGrid");grid.innerHTML="";
   choices.forEach(c=>{
@@ -760,6 +791,9 @@ function showSummary(){
 
 function finishDay(){wordIdx=0;renderWord();}
 
+function startStudy(){renderWord();}
+function startQuizFromSelect(){startQuiz();}
+
 function loadDay(s){
   curDate=s;const day=dateToDay(s),st=(day-1)*PER_DAY+1,en=st+PER_DAY-1;
   document.getElementById("dayBadge").textContent="Day "+day;
@@ -770,7 +804,12 @@ function loadDay(s){
   if(st>MAX_W){showView("completeView");return;}
   dayWords=ALL_WORDS.filter(w=>w.n>=st&&w.n<=en);
   if(!dayWords.length){showView("noDataView");return;}
-  setMode("study");renderWord();
+  setMode("study");
+  // モード選択画面を表示
+  const revCount=getReviewWords(s).filter(w=>!dayWords.find(d=>d.n===w.n)).length;
+  const desc=revCount>0?`復習語 ${revCount}語あり`:"今日の25語でテスト";
+  document.getElementById("modeSelectTitle").textContent=`Day ${day} — どちらから始めますか？`;
+  showView("modeSelectView");
 }
 document.getElementById("dateInput").addEventListener("change",e=>loadDay(e.target.value));
 loadDay("2026-04-20");
